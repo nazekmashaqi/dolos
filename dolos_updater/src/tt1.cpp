@@ -7,17 +7,6 @@
 #include <unistd.h>
 #include <vector>
 #include <dirent.h>
-#include "bsl_commands/BSLCommandManager.h"
-#include "bsl_commands/BSLCommand.h"
-#include "bsl_commands/BSLConnection.h"
-#include "bsl_commands/BSLGetDeviceInfo.h"
-#include "bsl_commands/BSLUnlockBootloader.h"
-/* #include "../bsl_commands/BSLFlashRangeErase.h"
-#include "../bsl_commands/BSLProgramData.h"
-#include "../bsl_commands/BSLStartApplication.h" */
-//#include "BSLCommandReceiveException.h"
-#include "bsl_commands/bsl_command_response/BSLGetDeviceInfoResponse.h"
-#include "bsl_commands/bsl_command_response/BSLCoreMessageResponse.h"
 using namespace std;
 string selectSerialPort()
 {
@@ -144,22 +133,52 @@ int main()
         cerr << "Error opening the serial port!" << endl;
         return 1;
     }
-BSLCommandManager bslCommandManager(serial_port);
+
     // connection command
-    BSLConnection bslConnection;
-     BSLGetDeviceInfoResponse* response = nullptr;
-    try {
-        BSLCommandResponse* commandResponse = bslCommandManager.transmit(&bslConnection);
-        response = dynamic_cast<BSLGetDeviceInfoResponse*>(commandResponse);
-        if (response != nullptr) {
-            std::cout << "Application Version: " << std::hex << "0x" << response->getApplicationVersion() << "\n";
-        } else {
-            std::cerr << "Unexpected response type.\n";
-        }
-    } catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << "\n";
+    unsigned char msg[] = {0x80, 0x01, 0x00, 0x12, 0x3A, 0x61, 0x44, 0xDE};
+    write(serial_port, msg, sizeof(msg));
+
+    char read_buf[256];
+
+    memset(&read_buf, '\0', sizeof(read_buf));
+
+    int num_bytes = read(serial_port, &read_buf, 1);
+
+    if (num_bytes < 0)
+    {
+        printf("Error reading: %s", strerror(errno));
+        return 1;
     }
-    
+    if (read_buf[0] == 0x00)
+        printf("Connection established with Bootstrap Leader \n");
+    printf("connection: Read %i bytes. Received message: %02x \n", num_bytes, read_buf[0]);
+
+    // Unlock command
+    unsigned char unlockBuffer[] = {0x80, 0x21, 0x00, 0x21, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF,
+                                    0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF,
+                                    0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0x02, 0xAA, 0xF0, 0x3D};
+
+    write(serial_port, unlockBuffer, sizeof(unlockBuffer));
+    memset(&read_buf, '\0', sizeof(read_buf));
+    printf(" Unlock:\n Read bytes. Received message:");
+    usleep(200000);
+    while (read(serial_port, &read_buf, 1) > 0)
+    {
+        printf("%02x ", read_buf[0] & 0xFF);
+    }
+
+    // DeviceInfo command
+
+    unsigned char infobuffer[] = {0x80, 0x01, 0x00, 0x19, 0xB2, 0xB8, 0x96, 0x49};
+    write(serial_port, infobuffer, sizeof(infobuffer));
+    usleep(1000);
+    printf("\n Info: \nRead bytes. Received message:");
+    memset(&read_buf, '\0', sizeof(read_buf));
+    while (read(serial_port, &read_buf, 1) > 0)
+    {
+        printf("%02x ", read_buf[0] & 0xFF);
+    }
+
     close(serial_port);
     return 0;
 }

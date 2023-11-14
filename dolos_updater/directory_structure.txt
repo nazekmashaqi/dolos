@@ -1,0 +1,42 @@
+.
+├── directory_structure.txt
+└── src
+    ├── bsl_commands
+    │   ├── BSLAck.cpp
+    │   ├── BSLAck.h
+    │   ├── BSLCommand.cpp
+    │   ├── BSLCommand.h
+    │   ├── BSLCommandManager.cpp
+    │   ├── BSLCommandManager.h
+    │   ├── bsl_command_response
+    │   │   ├── BSLCommandResponse.cpp
+    │   │   ├── BSLCommandResponse.h
+    │   │   ├── BSLCoreMessageResponse.cpp
+    │   │   ├── BSLCoreMessageResponse.h
+    │   │   ├── BSLGetDeviceInfoResponse.cpp
+    │   │   └── BSLGetDeviceInfoResponse.h
+    │   ├── BSLConnection.cpp
+    │   ├── BSLConnection.h
+    │   ├── BSLGetDeviceInfo.cpp
+    │   ├── BSLGetDeviceInfo.h
+    │   ├── BSLMsg.cpp
+    │   ├── BSLMsg.h
+    │   ├── BSLRsp.cpp
+    │   ├── BSLRsp.h
+    │   ├── BSLUnlockBootloader.cpp
+    │   └── BSLUnlockBootloader.h
+    ├── Constants
+    │   ├── BSLCommands.h
+    │   └── Sizes.h
+    ├── main.cpp
+    ├── tt
+    ├── tt.cpp
+    └── Utils
+        ├── ByteArrayUtils.cpp
+        ├── ByteArrayUtils.h
+        ├── CRC32Calculator.cpp
+        ├── CRC32Calculator.h
+        ├── Range.cpp
+        └── Range.h
+
+5 directories, 34 files
