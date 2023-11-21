@@ -1,0 +1,37 @@
+################################################################################
+# Automatically-generated file. Do not edit!
+################################################################################
+
+# Add inputs and outputs from these tool invocations to the build variables 
+CPP_SRCS += \
+../src/Utils/ByteArrayUtils.cpp \
+../src/Utils/CRC32Calculator.cpp \
+../src/Utils/Range.cpp 
+
+CPP_DEPS += \
+./src/Utils/ByteArrayUtils.d \
+./src/Utils/CRC32Calculator.d \
+./src/Utils/Range.d 
+
+OBJS += \
+./src/Utils/ByteArrayUtils.o \
+./src/Utils/CRC32Calculator.o \
+./src/Utils/Range.o 
+
+
+# Each subdirectory must supply rules for building sources it contributes
+src/Utils/%.o: ../src/Utils/%.cpp src/Utils/subdir.mk
+	@echo 'Building file: $<'
+	@echo 'Invoking: GCC C++ Compiler'
+	g++ -I"/home/nazek/eclipse-workspace/dolos/src/bsl_commands" -I"/home/nazek/eclipse-workspace/dolos/Release/src/bsl_commands/bsl_command_response" -I"/home/nazek/eclipse-workspace/dolos/src/Utils" -I"/home/nazek/eclipse-workspace/dolos/src/Constants" -include"/home/nazek/eclipse-workspace/dolos/src/bsl_commands/BSLCommand.h" -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -o "$@" "$<"
+	@echo 'Finished building: $<'
+	@echo ' '
+
+
+clean: clean-src-2f-Utils
+
+clean-src-2f-Utils:
+	-$(RM) ./src/Utils/ByteArrayUtils.d ./src/Utils/ByteArrayUtils.o ./src/Utils/CRC32Calculator.d ./src/Utils/CRC32Calculator.o ./src/Utils/Range.d ./src/Utils/Range.o
+
+.PHONY: clean-src-2f-Utils
+
