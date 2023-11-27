@@ -1,5 +1,7 @@
 #include "BSLCommand.h"
 #include "../Utils/CRC32Calculator.h"
+#include <iostream>
+using namespace std;
 
 BSLCommand::BSLCommand(uint8_t transferCommand, bool expectBSLCoreResponse) {
     this->transferCommand = transferCommand;
@@ -35,4 +37,8 @@ void BSLCommand::assembleTransferPacket(const std::vector<uint8_t>& data) {
     transferPacket.insert(transferPacket.end(), dataLength.begin(), dataLength.end());
     transferPacket.insert(transferPacket.end(), packetData.begin(), packetData.end());
     transferPacket.insert(transferPacket.end(), crc32Bytes.begin(), crc32Bytes.end());
+    for(int i=0;i<transferPacket.size();i++)
+    {
+    cout<<transferPacket[i];
+    }
 }

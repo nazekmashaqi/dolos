@@ -16,6 +16,11 @@ src/dolos.o: ../src/dolos.cpp \
  ../src/./bsl_commands/BSLCommand.h ../src/./bsl_commands/BSLConnection.h \
  ../src/./bsl_commands/BSLGetDeviceInfo.h \
  ../src/./bsl_commands/BSLUnlockBootloader.h \
+ /home/nazek/eclipse-workspace/dolos/src/bsl_commands/../bsl_commands/BSLFlashRangeErase.h \
+ /home/nazek/eclipse-workspace/dolos/src/bsl_commands/../bsl_commands/BSLCommand.h \
+ /home/nazek/eclipse-workspace/dolos/src/bsl_commands/../bsl_commands/BSLProgramData.h \
+ /home/nazek/eclipse-workspace/dolos/src/Utils/ByteArrayUtils.h \
+ /home/nazek/eclipse-workspace/dolos/src/bsl_commands/../bsl_commands/BSLStartApplication.h \
  ../src/bsl_commands/bsl_command_response/BSLGetDeviceInfoResponse.h \
  ../src/bsl_commands/bsl_command_response/BSLCoreMessageResponse.h
 /home/nazek/eclipse-workspace/dolos/src/bsl_commands/BSLCommand.h:
@@ -37,5 +42,10 @@ src/dolos.o: ../src/dolos.cpp \
 ../src/./bsl_commands/BSLConnection.h:
 ../src/./bsl_commands/BSLGetDeviceInfo.h:
 ../src/./bsl_commands/BSLUnlockBootloader.h:
+/home/nazek/eclipse-workspace/dolos/src/bsl_commands/../bsl_commands/BSLFlashRangeErase.h:
+/home/nazek/eclipse-workspace/dolos/src/bsl_commands/../bsl_commands/BSLCommand.h:
+/home/nazek/eclipse-workspace/dolos/src/bsl_commands/../bsl_commands/BSLProgramData.h:
+/home/nazek/eclipse-workspace/dolos/src/Utils/ByteArrayUtils.h:
+/home/nazek/eclipse-workspace/dolos/src/bsl_commands/../bsl_commands/BSLStartApplication.h:
 ../src/bsl_commands/bsl_command_response/BSLGetDeviceInfoResponse.h:
 ../src/bsl_commands/bsl_command_response/BSLCoreMessageResponse.h:

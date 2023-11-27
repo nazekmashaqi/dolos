@@ -1,12 +1,13 @@
 #include "BSLCommandManager.h"
 #include "../Utils/ByteArrayUtils.h"
-
+#include <iostream>
 
 BSLCommandManager::BSLCommandManager(int serialPort) : serialPort(serialPort), currentCommand(nullptr) {}
 
 
 BSLAck BSLCommandManager::receiveBSLAckResponse() {
     std::vector<uint8_t> bslAckData = receiveDataResponse(Sizes::ACK_DATA);
+    std::cout<<bslAckData[0];
     return BSLAck_valueOf(bslAckData[0]); 
 }
 
@@ -17,6 +18,7 @@ BSLRsp BSLCommandManager::receiveBSLRspResponse() {
 
 uint8_t BSLCommandManager::receiveHeaderResponse() {
     std::vector<uint8_t> headerData = receiveDataResponse(Sizes::HEADER_DATA);
+    std::cout<<headerData[0];
     return headerData[0];
 }
 
@@ -24,8 +26,11 @@ std::vector<uint8_t> BSLCommandManager::receiveDataResponse(int length) {
     std::vector<uint8_t> data(length);
     ssize_t readBytesLength = read(serialPort, data.data(), length);
 
+    if (readBytesLength == 0) {
+            throw std::runtime_error("no response recieved");
+        }
     if (readBytesLength != length) {
-        throw std::runtime_error("not receive response");
+        throw std::runtime_error("error in response");
     }
 
     return data;
@@ -45,7 +50,6 @@ int BSLCommandManager::receiveCRC32Response() {
 
 BSLCommandResponse* BSLCommandManager::receiveCommandResponse() {
     BSLAck bslAck = receiveBSLAckResponse();
-
     if (bslAck != BSLAck::ACK) {
         throw std::runtime_error("error in ACK");
     }
@@ -61,7 +65,6 @@ BSLCommandResponse* BSLCommandManager::receiveCommandResponse() {
     uint8_t* receiveData = receiveDataVector.data();
 
     int receiveCRC32 = receiveCRC32Response();
-
     return factory(bslRsp, bslAck, receiveHeader, receiveLength, bslRsp, receiveData, receiveCRC32);
 }
 

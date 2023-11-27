@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <string.h>
 #include <iostream>
 #include <fcntl.h>
@@ -13,10 +12,9 @@
 #include "./bsl_commands/BSLConnection.h"
 #include "./bsl_commands/BSLGetDeviceInfo.h"
 #include "./bsl_commands/BSLUnlockBootloader.h"
-/* #include "../bsl_commands/BSLFlashRangeErase.h"
- #include "../bsl_commands/BSLProgramData.h"
- #include "../bsl_commands/BSLStartApplication.h" */
-//#include "BSLCommandReceiveException.h"
+#include "../bsl_commands/BSLFlashRangeErase.h"
+#include "../bsl_commands/BSLProgramData.h"
+#include "../bsl_commands/BSLStartApplication.h"
 #include "bsl_commands/bsl_command_response/BSLGetDeviceInfoResponse.h"
 #include "bsl_commands/bsl_command_response/BSLCoreMessageResponse.h"
 using namespace std;
@@ -119,15 +117,23 @@ int openSerialPort(const string &deviceName) {
 	return serialPort;
 }
 void sendBSLInvoke(int serialPort) {
-	string bslInvokeCommaandString = "$BSL_INVOKE$";
+	string bslInvokeCommaandString = "bsl-invoke\r";
 	write(serialPort, bslInvokeCommaandString.c_str(),
 			bslInvokeCommaandString.length());
-	//sleep(10);
 	return;
 }
 ifstream openProgramFile(const string &filePath) {
 	ifstream fileStream(filePath);
 	return fileStream;
+}
+// Function to clear the input buffer of the serial port
+void clearSerialInputBuffer(int serialPort) {
+    char buffer[256];  // Adjust the size based on your needs
+
+    // Read and discard the existing data in the buffer
+    while (read(serialPort, buffer, sizeof(buffer)) > 0) {
+        // Do nothing, just read and discard
+    }
 }
 int main() {
 	string deviceName = selectSerialPort();
@@ -145,38 +151,47 @@ int main() {
 		return 1;
 	}
 	ifstream programFileInputStream;
-	    bool retryFileNameUserPrompt = false;
+	bool retryFileNameUserPrompt = false;
+	string programFilePath;
+	do {
 
-	    do {
-	        std::string programFilePath;
-	        std::cout << "Enter the program file path: ";
-	        std::cin >> programFilePath;
+		cout << "Enter the program file path: ";
+		cin >> programFilePath;
 
-	        programFileInputStream = openProgramFile(programFilePath);
+		programFileInputStream = openProgramFile(programFilePath);
 
-	        if (!programFileInputStream.is_open()) {
-	            retryFileNameUserPrompt = true;
-	            std::cout << "Program file was not found, please re-enter the program file path." << std::endl;
-	        } else {
-	            retryFileNameUserPrompt = false;
-	        }
+		if (!programFileInputStream.is_open()) {
+			retryFileNameUserPrompt = true;
+			cout
+					<< "Program file was not found, please re-enter the program file path."
+					<< endl;
+		} else {
+			retryFileNameUserPrompt = false;
+		}
 
-	    } while (retryFileNameUserPrompt);
-	//sendBSLInvoke(serial_port);
+	} while (retryFileNameUserPrompt);
+
 	BSLCommandManager bslCommandManager(serial_port);
 	BSLConnection bslConnection;
 	BSLGetDeviceInfo deviceInfo;
 	BSLUnlockBootloader bslUnlock;
 	BSLGetDeviceInfoResponse *response = nullptr;
-
+	BSLCommandResponse *commandResponse;
+	bool connectionSucceed = 0;
+	//while (!connectionSucceed) {
 	try {
-		BSLCommandResponse *commandResponse = bslCommandManager.transmit(
-				&bslConnection);
-		commandResponse = bslCommandManager.transmit(&bslUnlock);
-		// Use dynamic_cast with a pointer to BSLGetDeviceInfo
-		response =
-				dynamic_cast<BSLGetDeviceInfoResponse*>(bslCommandManager.transmit(
-						&deviceInfo));
+		sendBSLInvoke(serial_port);
+		close(serial_port);
+		serial_port = openSerialPort(deviceName);
+		sleep(3);
+		cout<<"Connection command:";
+		commandResponse = bslCommandManager.transmit(&bslConnection);
+		cout<<"Unlock command:";
+						commandResponse = bslCommandManager.transmit(&bslUnlock);
+		cout<<"DeviceInfo command:";
+		//response =
+			//	dynamic_cast<BSLGetDeviceInfoResponse*>(bslCommandManager.transmit(
+				//		&deviceInfo));
 
 		if (response != nullptr) {
 			cout << "Application Version: " << hex << "0x"
@@ -184,6 +199,8 @@ int main() {
 		} else {
 			cerr << "Unexpected response type.\n";
 		}
+
+		connectionSucceed = 1;
 	} catch (const exception &e) {
 		cerr
 				<< "Try resetting  the device power cycle and press Enter to proceed \n"
@@ -191,6 +208,44 @@ int main() {
 
 	}
 
+	cout<<"Flash Range Erase command:";
+	BSLFlashRangeErase bslFlashRangeErase(0x00, 0xFC00);
+	commandResponse = bslCommandManager.transmit(&bslFlashRangeErase);
+	BSLCoreMessageResponse *coreResponse =
+			dynamic_cast<BSLCoreMessageResponse*>(commandResponse);
+	if (coreResponse->getBslMsg() == BSLMsg::OPERATION_SUCCESSFUL) {
+		cout << "Flash range erase finished\n";
+
+	}
+
+	vector<BSLProgramData> programDataPackets =
+			BSLProgramData::getBslProgramDataPacketsFromFile(programFilePath,
+					0);
+
+	int currentIteration = 0;
+	cout << "Programming in progress...\n";
+
+	for (BSLProgramData &programDataPacket : programDataPackets) {
+		BSLCoreMessageResponse *bslMessageResponse =
+				dynamic_cast<BSLCoreMessageResponse*>(bslCommandManager.transmit(
+						&programDataPacket));
+
+		++currentIteration;
+
+		// Calculate and show the current programming percentage
+		int currentProgramPercentage = currentIteration * 100
+				/ programDataPackets.size();
+		cout << "%" << currentProgramPercentage << "\n";
+
+		// Show the user the current programming percentage
+		if (bslMessageResponse->getBslMsg() == BSLMsg::OPERATION_SUCCESSFUL) {
+			cout << "%" << currentProgramPercentage << "\n";
+		}
+	}
+
+	BSLStartApplication bslStartApplication;
+	bslCommandManager.transmit(&bslStartApplication);
+	cout << "Starting user application";
 	close(serial_port);
 	return 0;
 }
